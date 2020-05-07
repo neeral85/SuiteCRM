@@ -1127,7 +1127,8 @@ class EmailMan extends SugarBean
                     $mail->AltBody .= "\n" . $tracker_url;
                 }
                 if ($this->has_optout_links == false) {
-                    $mail->AltBody .= "\n\n\n{$mod_strings['TXT_REMOVE_ME_ALT']} " . $this->tracking_url . "index.php?entryPoint=removeme&identifier={$this->getTargetId()}";
+                    // disable default opt out footer
+                    //$mail->AltBody .= "\n\n\n{$mod_strings['TXT_REMOVE_ME_ALT']} " . $this->tracking_url . "index.php?entryPoint=removeme&identifier={$this->getTargetId()}";
                 }
             }
 
