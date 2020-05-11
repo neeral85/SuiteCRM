@@ -1070,10 +1070,16 @@ class EmailMan extends SugarBean
             $macro_nv['sugar_to_email_address'] = $module->email1;
             $macro_nv['email_template_id'] = $this->current_emailmarketing->template_id;
 
+            // load custom urls.
+            $custom_url_track = isset($sugar_config['custom_url_campaign_trackerv2']) ? $sugar_config['custom_url_campaign_trackerv2'] . '/%s' : 'index.php?entryPoint=campaign_trackerv2&track=%s';
+            $custom_url_track_id = isset($sugar_config['custom_url_campaign_trackerv2']) ? '/' : '&identifier=';
+            $custom_url_removeme = isset($sugar_config['custom_url_removeme']) ? $sugar_config['custom_url_removeme'] . '/' : 'index.php?entryPoint=removeme&identifier=';
+            $custom_url_image = isset($sugar_config['custom_url_image']) ? $sugar_config['custom_url_image'] . '/' : 'index.php?entryPoint=image&identifier=';
+
             //parse and replace urls.
             //this is new style of adding tracked urls to a campaign.
-            $tracker_url_template = $this->tracking_url . 'index.php?entryPoint=campaign_trackerv2&track=%s' . '&identifier=' . $this->getTargetId();
-            $removeme_url_template = $this->tracking_url . 'index.php?entryPoint=removeme&identifier=' . $this->getTargetId();
+            $tracker_url_template = $this->tracking_url . $custom_url_track . $custom_url_track_id . $this->getTargetId();
+            $removeme_url_template = $this->tracking_url . $custom_url_removeme . $this->getTargetId();
             $template_data = $this->current_emailtemplate->parse_tracker_urls($template_data, $tracker_url_template, $this->tracker_urls, $removeme_url_template);
             $mail->AddAddress($module->email1, $locale->translateCharsetMIME(trim($module->name), 'UTF-8', $OBCharset));
 
@@ -1117,18 +1123,17 @@ class EmailMan extends SugarBean
                 //END
                 //do not add the default remove me link if the campaign has a trackerurl of the opotout link
                 if ($this->has_optout_links == false) {
-                    $mail->Body .= "<br /><span style='font-size:0.8em'>{$mod_strings['TXT_REMOVE_ME']} <a href='" . $this->tracking_url . "index.php?entryPoint=removeme&identifier={$this->getTargetId()}'>{$mod_strings['TXT_REMOVE_ME_CLICK']}</a></span>";
+                    $mail->Body .= "<br /><span style='font-size:0.8em'>{$mod_strings['TXT_REMOVE_ME']} <a href='" . $this->tracking_url . "{$custom_url_removeme}{$this->getTargetId()}'>{$mod_strings['TXT_REMOVE_ME_CLICK']}</a></span>";
                 }
                 // cn: bug 11979 - adding single quote to comform with HTML email RFC
-                $mail->Body .= "<br /><img alt='' height='1' width='1' src='{$this->tracking_url}index.php?entryPoint=image&identifier={$this->getTargetId()}' />";
+                $mail->Body .= "<br /><img alt='' height='1' width='1' src='{$this->tracking_url}{$custom_url_image}{$this->getTargetId()}' />";
 
                 $mail->AltBody = $template_data['body'];
                 if ($btracker) {
                     $mail->AltBody .= "\n" . $tracker_url;
                 }
                 if ($this->has_optout_links == false) {
-                    // disable default opt out footer
-                    //$mail->AltBody .= "\n\n\n{$mod_strings['TXT_REMOVE_ME_ALT']} " . $this->tracking_url . "index.php?entryPoint=removeme&identifier={$this->getTargetId()}";
+                    $mail->AltBody .= "\n\n\n{$mod_strings['TXT_REMOVE_ME_ALT']} " . $this->tracking_url . "{$custom_url_removeme}{$this->getTargetId()}";
                 }
             }
 
